@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { courseOutlineIAModel } from "@/configs/AiModel";
 import { db } from "@/configs/db";
 import { STUDY_TABLE } from "@/configs/schema";
+import { inngest } from "@/inngest/client";
 
 export async function POST(req) {
     const { courseId, topic, courseType, difficultyLevel, createdBy} = await req.json();
@@ -19,7 +20,15 @@ export async function POST(req) {
         createdBy: createdBy,
         topic: topic,
         courseLayout: aiResult,        
-    }).returning({ STUDY_TABLE });
-    console.log(dbResult);
+    }).returning({ resp:STUDY_TABLE });
+
+    // trigger the Inggrest function to generate chapter notes
+    const result = await inngest.send({
+        name: 'notes.generate',
+        data: {
+            course: dbResult[0].resp
+        }
+    })
+    console.log(result);
     return NextResponse.json({ result: dbResult[0] });
 }

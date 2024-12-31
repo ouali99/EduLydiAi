@@ -37,6 +37,24 @@ const {
         },
       ],
     });
+
+    export const genertsteNotesAIModel = model.startChat({
+        generationConfig,
+        history: [
+          {
+            role: "user",
+            parts: [
+              {text: "Generate exam material detail content for eachh chapter, make sur to includes all topic point in the content, make sur to give content in HTML format (Do not add HTMLK, Head, Body, title tag), The chaptere:\n{\n      \"chapter_title\": \"Introduction to Java\",\n      \"summary\": \"This chapter introduces Java, its applications, and setting up your programming environment. We'll cover installing the JDK, setting up a suitable IDE (like Eclipse or IntelliJ), and compiling and running your first Java program.\",\n      \"topics\": [\n        \"What is Java?\",\n        \"Why learn Java?\",\n        \"Installing the JDK\",\n        \"Choosing an IDE (Eclipse, IntelliJ)\",\n        \"The structure of a Java program\",\n        \"Compiling and running Java code\"\n      ]\n    },"},
+            ],
+          },
+          {
+            role: "model",
+            parts: [
+              {text: "```html\n<h3>Introduction to Java</h3>\n<p>This chapter introduces Java, its applications, and setting up your programming environment.  We'll cover installing the JDK, setting up a suitable IDE (like Eclipse or IntelliJ), and compiling and running your first Java program.</p>\n\n<h4>What is Java?</h4>\n<p>Explain Java's nature as a high-level, object-oriented, platform-independent programming language. Discuss its features: robustness, security, platform independence (\"write once, run anywhere\"), and its use in various applications.</p>\n\n<h4>Why learn Java?</h4>\n<p>Discuss the reasons to learn Java.  Include points such as its widespread use in enterprise applications, Android development, big data technologies, and its strong community support and abundant learning resources.  Highlight career opportunities associated with Java proficiency.</p>\n\n<h4>Installing the JDK (Java Development Kit)</h4>\n<p>Provide step-by-step instructions for downloading and installing the appropriate JDK version for your operating system (Windows, macOS, Linux). Include screenshots where helpful. Mention setting the JAVA_HOME environment variable and verifying the installation by checking the Java version in the command prompt/terminal.</p>\n\n<h4>Choosing an IDE (Integrated Development Environment): Eclipse and IntelliJ</h4>\n<p>Compare and contrast Eclipse and IntelliJ IDEA (community edition). Discuss their features, advantages, and disadvantages. Provide links to download pages for both IDEs.  Offer brief instructions on setting up a new Java project in each IDE.</p>\n\n<h4>The Structure of a Java Program</h4>\n<p>Explain the basic structure of a Java program, including the <code>public class</code> declaration, the <code>main</code> method,  <code>System.out.println()</code> for output, and the use of comments (<code>//</code> and <code>/* ... */</code>).  Show examples of a simple \"Hello, World!\" program.</p>\n\n<h4>Compiling and Running Java Code</h4>\n<p>Explain the compilation process using the Java compiler (<code>javac</code>).  Describe how to compile a Java source file (<code>.java</code>) into a bytecode file (<code>.class</code>). Explain the role of the Java Virtual Machine (JVM) in running the bytecode. Provide step-by-step instructions for compiling and running a Java program from the command line and within the chosen IDE.</p>\n```\n"},
+            ],
+          },
+        ],
+      });
   
     // const result = await chatSession.sendMessage("INSERT_INPUT_HERE");
     // console.log(result.response.text());

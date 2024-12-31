@@ -7,6 +7,7 @@ import axios from 'axios'
 import {v4 as uuidv4} from 'uuid'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const Create = () => {
   const [step, setStep] =  useState(0)
@@ -37,6 +38,8 @@ const Create = () => {
     });
     setLoading(false)
     router.replace('/dashboard')
+    //Toeast notification
+    toast('Your course is generating, please wait')
     console.log(result);
   }
   return (
