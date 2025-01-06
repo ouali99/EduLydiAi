@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { RefreshCcw } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import React from 'react'
 
 function CourseCardItem({course}) {
@@ -23,7 +24,8 @@ function CourseCardItem({course}) {
                 <h2 className='text-sm p-1 px-2 flex gap-2 items-center rounded-full bg-gray-500 text-white'>
                     <RefreshCcw className='h-5 w-5'/>
                     Generating</h2>
-                :<Button>View</Button>}
+                :
+                <Link href={'/course/'+course?.courseId}><Button>View</Button></Link>}
             </div>
         </div>
     </div>
