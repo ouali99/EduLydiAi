@@ -60,8 +60,12 @@ export const GenerateNotes = inngest.createFunction(
       const Chapters = course?.courseLayout?.chapters;
       let index = 0;
       for (const chapter of Chapters) {
-        const PROMPT = "Generate exam material detail content for eachh chapter, make sur to includes all topic point in the content, make sur to give content in HTML format (Do not add HTML, Head, Body, title tag), The chapters :"+JSON.stringify(Chapters);
-        const result = await genertsteNotesAIModel.sendMessage(PROMPT);
+        const PROMPT = `Generate exam material detail content for each chapter, make sure to include all topic points in the content. Add relevant emojis to titles and sections. Make content engaging and visually appealing. Return in HTML format without HTML, Head, Body tags, but include these style elements:
+        - Main titles (h3) should have emojis and be in blue (#1a365d)
+        - Subtitles (h4) should have relevant emojis and be in dark gray (#2d3748)
+        - Code examples should be in monospace font with light gray background
+        - Important points should be highlighted
+        The chapter: ${JSON.stringify(chapter)}`;        const result = await genertsteNotesAIModel.sendMessage(PROMPT);
         const aiResponse = result.response.text()
 
         await db.insert(CHAPTER_NOTES_TABLE).values({
