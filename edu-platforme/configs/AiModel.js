@@ -18,6 +18,14 @@ const {
     maxOutputTokens: 8192,
     responseMimeType: "application/json",
   };
+
+  const generationConfig2 = {
+    temperature: 1,
+    topP: 0.95,
+    topK: 40,
+    maxOutputTokens: 8192,
+    responseMimeType: "text/plain",
+  };
   
 
     export const courseOutlineIAModel = model.startChat({
@@ -55,7 +63,24 @@ const {
           },
         ],
       });
-  
+      
+    export const GenerateStudyTypeContentAiModel = model.startChat({
+      generationConfig,
+      history: [
+        {
+          role: "user",
+          parts: [
+            {text: "generate the flashcard on topic : Flutter Fundamentals, User Interface (UI) Development, Basic App Navigation in Json format with front back content, maximum 15"},
+          ],
+        },
+        {
+          role: "model",
+          parts: [
+            {text: "```json\n[\n  {\n    \"front\": \"What is Flutter?\",\n    \"back\": \"Flutter is Google's UI toolkit for building natively compiled applications for mobile, web, and desktop from a single codebase.\"\n  },\n  {\n    \"front\": \"What are Widgets in Flutter?\",\n    \"back\": \"Widgets are the fundamental building blocks of Flutter UI. Everything in a Flutter app is a widget, including layout elements, text, images, and even the app itself.\"\n  },\n  {\n    \"front\": \"Explain the difference between StatelessWidget and StatefulWidget.\",\n    \"back\": \"StatelessWidget:  A widget that doesn't change over time. StatefulWidget: A widget that can change its state and rebuild its UI in response to events or data changes.\"\n  },\n  {\n    \"front\": \"Name three common layout widgets in Flutter.\",\n    \"back\": \"Row, Column, Stack\"\n  },\n  {\n    \"front\": \"What is the purpose of a `BuildContext`?\",\n    \"back\": \"The `BuildContext` provides information about the widget's location in the widget tree and allows access to services and other widgets.\"\n  },\n  {\n    \"front\": \"How do you display text in Flutter?\",\n    \"back\": \"Using the `Text` widget.\"\n  },\n  {\n    \"front\": \"How do you display an image in Flutter?\",\n    \"back\": \"Using the `Image.asset` or `Image.network` widget.\"\n  },\n  {\n    \"front\": \"What is the role of `Scaffold`?\",\n    \"back\": \"Provides a basic visual layout structure for an app, including an AppBar, body, and bottom navigation bar.\"\n  },\n  {\n    \"front\": \"What is Material Design?\",\n    \"back\": \"A design language developed by Google that provides guidelines for creating visually appealing and consistent user interfaces.\"\n  },\n  {\n    \"front\": \"How to navigate to a new screen using named routes?\",\n    \"back\": \"Use `Navigator.pushNamed(context, '/routeName');`  and define routes in `MaterialApp`'s `routes` property.\"\n  },\n  {\n    \"front\": \"How to pass data to a new screen during navigation?\",\n    \"back\": \"Use `arguments` in `Navigator.pushNamed(context, '/routeName', arguments: myData);` and access it in the destination screen using `ModalRoute.of(context)?.settings.arguments`.\"\n  },\n  {\n    \"front\": \"What is a `Key` in Flutter?\",\n    \"back\": \"A `Key` helps Flutter identify widgets when rebuilding the UI, especially helpful for managing lists or animations.\"\n  },\n  {\n    \"front\": \"What is the difference between `push` and `pushReplacementNamed`?\",\n    \"back\": \"`push` adds a new route to the navigation stack. `pushReplacementNamed` replaces the current route with the new one.\"\n  },\n  {\n    \"front\": \"How to use `Navigator.pop`?\",\n    \"back\": \"To navigate back to the previous screen in the navigation stack.\"\n  },\n  {\n    \"front\": \"What is a `FutureBuilder`?\",\n    \"back\": \"A widget that builds itself based on the result of a future (asynchronous operation), allowing you to handle loading states and errors gracefully.\"\n  }\n]\n```\n"},
+          ],
+        },
+      ],
+    })
     // const result = await chatSession.sendMessage("INSERT_INPUT_HERE");
     // console.log(result.response.text());
   

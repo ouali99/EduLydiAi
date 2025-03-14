@@ -27,7 +27,7 @@ function Course() {
             <CourseIntroCard course={course}/>
 
         {/** Study Material Options */}
-            <StudyMaterialSection courseId={courseId}/>
+            <StudyMaterialSection courseId={courseId} course={ course }/>
 
         {/** Chapter list */}
             <ChapterList course={course} />
