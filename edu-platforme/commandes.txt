@@ -1,0 +1,5 @@
+# Demarer le serveur inngest
+npx inngest-cli@latest dev
+
+# Demarer le serveur drizzle
+npx drizzle-kit studio
