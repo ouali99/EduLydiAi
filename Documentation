@@ -1,0 +1,289 @@
+# EducLydIA - Technical Documentation
+
+## Table of Contents
+
+1. [System Overview](#system-overview)
+2. [Architecture](#architecture)
+3. [Database Schema](#database-schema)
+4. [Authentication](#authentication)
+5. [Key Components](#key-components)
+6. [AI Integration](#ai-integration)
+7. [API Routes](#api-routes)
+8. [Background Processing](#background-processing)
+9. [Frontend Components](#frontend-components)
+10. [Workflows](#workflows)
+11. [Deployment](#deployment)
+12. [Configuration](#configuration)
+13. [Troubleshooting](#troubleshooting)
+
+## System Overview
+
+EducLydIA is an AI-powered educational platform that enables users to generate personalized study materials on any topic. The system leverages Google's Generative AI (Gemini) to create comprehensive learning content tailored to the user's specified difficulty level and learning purpose.
+
+The platform follows a modern architecture using Next.js for both frontend and backend, PostgreSQL for data storage, and a background processing system to handle resource-intensive AI content generation.
+
+## Architecture
+
+The application follows a modern Next.js architecture with the App Router pattern:
+
+```
+┌─────────────────────────┐
+│       Next.js App       │
+│  ┌───────────────────┐  │
+│  │    Frontend UI    │  │
+│  └───────────────────┘  │
+│  ┌───────────────────┐  │
+│  │    API Routes     │  │
+│  └───────────────────┘  │
+└─────────────────────────┘
+          │      ▲
+          ▼      │
+┌─────────────────────────┐
+│   Background Process    │
+│    (Inngest Functions)  │
+└─────────────────────────┘
+          │      ▲
+          ▼      │
+┌─────────────────────────┐
+│   Database (Postgres)   │
+└─────────────────────────┘
+          │      ▲
+          ▼      │
+┌─────────────────────────┐
+│    Google Gemini AI     │
+└─────────────────────────┘
+```
+
+- **Frontend**: React components with Tailwind CSS styling
+- **Backend**: Next.js API routes
+- **Database**: PostgreSQL with Drizzle ORM
+- **Authentication**: Clerk
+- **Background Processing**: Inngest
+- **AI**: Google Generative AI (Gemini)
+
+## Database Schema
+
+EducLydIA uses a PostgreSQL database with the following schema (defined in `configs/schema.js`):
+
+### USER_TABLE
+- `id`: Serial Primary Key
+- `name`: VARCHAR (Not Null)
+- `email`: VARCHAR (Not Null)
+- `isMember`: BOOLEAN (Default: false)
+
+### STUDY_TABLE
+- `id`: Serial Primary Key
+- `courseId`: VARCHAR (Not Null)
+- `courseType`: VARCHAR (Not Null)
+- `topic`: VARCHAR (Not Null)
+- `difficultyLevel`: VARCHAR (Default: 'Easy')
+- `courseLayout`: JSON
+- `createdBy`: VARCHAR (Not Null)
+- `status`: VARCHAR (Default: 'Generating')
+
+### CHAPTER_NOTES_TABLE
+- `id`: Serial Primary Key
+- `courseId`: VARCHAR (Not Null)
+- `chapterId`: INTEGER (Not Null)
+- `notes`: TEXT
+
+### STUDY_TYPE_CONTENT_TABLE
+- `id`: Serial Primary Key
+- `courseId`: VARCHAR (Not Null)
+- `content`: JSON
+- `type`: VARCHAR (Not Null)
+- `status`: VARCHAR (Default: 'Generating')
+
+## Authentication
+
+Authentication is handled by Clerk, which provides:
+- User sign-up and sign-in
+- Session management
+- Profile management
+
+Protected routes are defined in `middleware.js` using Clerk's middleware:
+- `/dashboard/*`
+- `/create/*`
+- `/course/*`
+
+## Key Components
+
+### Course Creation
+- `app/create/page.jsx`: Main course creation page
+- `app/create/_components/SelectOption.jsx`: Component for selecting course type
+- `app/create/_components/TopicInput.jsx`: Component for entering topic and difficulty
+
+### Dashboard
+- `app/dashboard/page.jsx`: Main dashboard page
+- `app/dashboard/_components/CourseList.jsx`: List of user courses
+- `app/dashboard/_components/WelcomeBanner.jsx`: Welcome banner with user info
+- `app/dashboard/_components/CourseCardItem.jsx`: Individual course card
+
+### Course View
+- `app/course/[courseId]/page.jsx`: Course details page
+- `app/course/[courseId]/notes/page.jsx`: Chapter notes view
+- `app/course/[courseId]/flashcards/page.jsx`: Flashcards view
+- `app/course/[courseId]/_components/ChapterList.jsx`: List of course chapters
+- `app/course/[courseId]/_components/StudyMaterialSection.jsx`: Study material options
+
+## AI Integration
+
+EducLydIA integrates with Google's Generative AI (Gemini) for content generation:
+
+### AI Models Configuration
+Located in `configs/AiModel.js`:
+
+1. **courseOutlineIAModel**: Generates the initial course outline with chapters and topics
+2. **genertsteNotesAIModel**: Generates detailed notes for each chapter
+3. **GenerateStudyTypeContentAiModel**: Generates flashcards, quizzes, and Q&A content
+
+### Content Generation Process
+1. User inputs topic, course type, and difficulty level
+2. System sends prompt to Google's Gemini AI
+3. AI generates course outline in JSON format
+4. System stores outline in database
+5. Background processes generate detailed chapter notes and additional study materials
+
+## API Routes
+
+### Course Management
+- `app/api/courses/route.js`: GET/POST endpoints for fetching course details
+- `app/api/generate-course-outline/route.js`: Creates new course outlines
+- `app/api/study-type-content/route.js`: Generates study materials (flashcards, etc.)
+- `app/api/study-type/route.js`: Fetches study materials for a course
+
+### User Management
+- `app/api/create-user/route.js`: Creates new user records
+
+### Inngest Integration
+- `app/api/inngest/route.js`: Exposes Inngest functions as API endpoints
+
+## Background Processing
+
+EducLydIA uses Inngest for reliable background processing of resource-intensive tasks:
+
+### Inngest Functions (defined in `inngest/functions.js`)
+
+1. **helloWorld**: Simple test function
+2. **CreateNewUser**: Creates new user in database
+3. **GenerateNotes**: Generates chapter notes for a course
+4. **GenerateStudyTypeContent**: Generates flashcards, quizzes, etc.
+
+### Background Processing Workflow
+1. User triggers course creation
+2. System creates course outline record and triggers Inngest background job
+3. Inngest processes AI requests asynchronously
+4. When complete, database is updated and UI reflects available content
+
+## Frontend Components
+
+### UI Components
+Located in `components/ui/`:
+- `button.jsx`: Customized button component
+- `progress.jsx`: Progress indicator
+- `select.jsx`: Dropdown select component
+- `sonner.jsx`: Toast notification component
+- `textarea.jsx`: Text input area
+
+### Layouts
+- `app/layout.js`: Root layout with global providers
+- `app/dashboard/layout.jsx`: Dashboard layout with sidebar
+- `app/course/layout.jsx`: Course view layout
+
+## Workflows
+
+### User Registration Flow
+1. User signs up using Clerk authentication
+2. On successful authentication, user record is created in database
+3. User is redirected to dashboard
+
+### Course Creation Flow
+1. User selects purpose (Exam, Job Interview, etc.)
+2. User enters topic and selects difficulty level
+3. System generates unique courseId and sends request to AI
+4. Course outline is saved to database with "Generating" status
+5. Background job is triggered to generate chapter notes
+6. User is redirected to dashboard with course in "Generating" state
+7. When generation completes, course status changes to "Ready"
+
+### Study Material Generation Flow
+1. User views a course and selects study material type (Flashcards, Quiz, etc.)
+2. System creates a record with "Generating" status
+3. Background job is triggered to generate content
+4. When ready, content is displayed to user
+
+## Deployment
+
+EducLydIA is designed to be deployed on Vercel:
+
+### Environment Variables
+- `NEXT_PUBLIC_DATABASE_CONNECTION_STRING`: Neon PostgreSQL connection string
+- `NEXT_PUBLIC_GEMINI_API_KEY`: Google Generative AI API key
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: Clerk publishable key
+- `CLERK_SECRET_KEY`: Clerk secret key
+
+### Deployment Commands
+```bash
+# Build the application
+npm run build
+
+# Deploy to Vercel
+vercel deploy --prod
+```
+
+## Configuration
+
+### AI Model Configuration
+Located in `configs/AiModel.js`:
+- Model: gemini-1.5-flash
+- Temperature: 1
+- TopP: 0.95
+- TopK: 40
+- MaxOutputTokens: 8192
+- Response formats: application/json for structured data, text/plain for notes
+
+### Database Configuration
+- Connection string defined in `configs/db.js`
+- Schema defined in `configs/schema.js`
+- Drizzle configuration in `drizzle.config.js`
+
+## Troubleshooting
+
+### Common Issues
+
+**Content Generation Timeout**
+- Issue: AI content generation takes too long and times out
+- Solution: Check Inngest logs and ensure background functions are running correctly
+
+**Database Connection Issues**
+- Issue: Cannot connect to Neon database
+- Solution: Verify connection string and ensure IP is allowlisted
+
+**Missing Study Materials**
+- Issue: Study materials show "Generate" even after generation
+- Solution: Check Inngest logs and verify background job completed successfully
+
+### Debugging Tools
+
+**Inngest CLI**
+```bash
+# Start Inngest dev server
+npx inngest-cli@latest dev
+```
+
+**Drizzle Studio**
+```bash
+# Start Drizzle database management UI
+npx drizzle-kit studio
+```
+
+**Next.js Development Mode**
+```bash
+# Start Next.js in development mode with detailed logs
+npm run dev
+```
+
+### Log Files
+- Next.js server logs in the console
+- Inngest execution logs in Inngest dashboard
+- Database query logs in Drizzle studio
