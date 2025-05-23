@@ -1,80 +1,59 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { auth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/configs/db";
 import { USER_TABLE } from "@/configs/schema";
 import { eq } from "drizzle-orm";
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-export async function GET(req) {
-  try {
-    const { userId } = auth();
-    
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+export async function GET() {
+    try {
+        // Récupérer l'authentification via Clerk - ne pas dépendre du token dans l'en-tête
+        const { userId } = auth();
+        
+        // Si l'utilisateur n'est pas authentifié, retourner des données par défaut
+        if (!userId) {
+            return NextResponse.json({
+                plan: 'Free',
+                credits: 5,
+                creditsUsed: 0,
+                status: 'active'
+            });
+        }
+        
+        // Récupérer les informations d'utilisateur
+        const users = await db
+            .select()
+            .from(USER_TABLE)
+            .where(eq(USER_TABLE.clerkId, userId));
+            
+        // Si l'utilisateur n'est pas trouvé dans la base de données
+        if (users.length === 0) {
+            return NextResponse.json({
+                plan: 'Free',
+                credits: 5,
+                creditsUsed: 0,
+                status: 'active'
+            });
+        }
+        
+        const user = users[0];
+        
+        // Mapper les données de l'utilisateur au format attendu par le frontend
+        return NextResponse.json({
+            plan: user.subscriptionTier || 'Free',
+            credits: user.subscriptionTier === 'Pro' ? 10000 : 5,
+            creditsUsed: user.creditsUsed || 0,
+            status: user.isMember ? 'active' : 'inactive'
+        });
+        
+    } catch (error) {
+        console.error("Error fetching subscription:", error);
+        
+        // En cas d'erreur, retourner des données par défaut
+        return NextResponse.json({
+            plan: 'Free',
+            credits: 5,
+            creditsUsed: 0,
+            status: 'active'
+        });
     }
-
-    // Get user from database
-    const user = await db
-      .select()
-      .from(USER_TABLE)
-      .where(eq(USER_TABLE.clerkId, userId))
-      .limit(1);
-
-    if (!user || user.length === 0) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
-    }
-
-    const userRecord = user[0];
-
-    // If user doesn't have a subscription, return basic info
-    if (!userRecord.stripeSubscriptionId) {
-      return NextResponse.json({
-        subscription: null,
-        plan: "Free",
-        credits: 5,
-        creditsUsed: userRecord.creditsUsed || 0,
-        status: "active"
-      });
-    }
-
-    // Get subscription details from Stripe
-    const subscription = await stripe.subscriptions.retrieve(userRecord.stripeSubscriptionId);
-    const product = await stripe.products.retrieve(subscription.items.data[0].price.product);
-
-    // Calculate credits based on plan
-    let totalCredits = 5; // Default for free plan
-    if (product.name === "Pro") {
-      totalCredits = 999999; // Unlimited
-    } else if (product.name === "Teams") {
-      totalCredits = 999999; // Unlimited
-    }
-
-    return NextResponse.json({
-      subscription: {
-        id: subscription.id,
-        status: subscription.status,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-        cancelAtPeriodEnd: subscription.cancel_at_period_end
-      },
-      plan: product.name,
-      credits: totalCredits,
-      creditsUsed: userRecord.creditsUsed || 0,
-      status: subscription.status
-    });
-  } catch (error) {
-    console.error("Error fetching subscription:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch subscription" },
-      { status: 500 }
-    );
-  }
 }
