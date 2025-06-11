@@ -25,11 +25,13 @@ function ViewNotes() {
 
     const displayNotes = (notes) => {
         if (!notes) {
-            return null; // Retourne null si notes est undefined ou null
+            return null; 
         }
+        if (typeof notes === "object") return notes.content || notes;
+
         try {
-            const parsedNotes = JSON.parse(notes);
-            return parsedNotes.content;
+            const parsed = JSON.parse(notes);
+            return parsed.content || parsed;
         } catch (e) {
             console.error("Error parsing notes:", e);
             return notes; // Retourne les notes brutes si le parsing échoue

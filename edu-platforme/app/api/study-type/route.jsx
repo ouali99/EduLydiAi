@@ -12,7 +12,7 @@ export async function POST(req) {
                             .select()
                             .from(CHAPTER_NOTES_TABLE)
                             .where(eq(CHAPTER_NOTES_TABLE?.courseId, courseId));
-
+        
         //Get all other study Type records
 
         const contentList = await db
@@ -22,10 +22,9 @@ export async function POST(req) {
 
         const result = {
             notes: notes,
-            flashcard: contentList?.find(item => item.type === 'Flashcards'),   
-            quiz: null,
-            quiz: null,
-            qa: null
+            flashcards: contentList?.find(item => item.type === 'Flashcards'),   
+            quiz: [],
+            qa: []
         }
         return NextResponse.json(result);
     }

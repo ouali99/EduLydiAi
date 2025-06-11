@@ -6,7 +6,7 @@ import { LayoutDashboard, Shield, UserCircle, LogOut } from 'lucide-react'
 import { usePathname } from 'next/navigation'
 import { Progress } from '@/components/ui/progress'
 import Link from 'next/link'
-import { useUser, SignOutButton, useAuth } from '@clerk/nextjs'  // Ajout de useAuth
+import { useUser, SignOutButton } from '@clerk/nextjs'
 import axios from 'axios'
 
 const SideBar = () => {
@@ -30,7 +30,6 @@ const SideBar = () => {
 
     const path = usePathname();
     const { user, isSignedIn, isLoaded } = useUser();
-    const { getToken } = useAuth(); // Utiliser useAuth pour obtenir getToken
     const [subscriptionData, setSubscriptionData] = useState({
         plan: 'Free',
         credits: 5,
@@ -40,11 +39,9 @@ const SideBar = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Attendre que Clerk ait chargé l'utilisateur et qu'il soit connecté
         if (isLoaded && isSignedIn && user) {
             fetchSubscriptionData();
-        } else if (isLoaded && !isSignedIn) {
-            // L'utilisateur n'est pas connecté, mais Clerk a fini de charger
+        } else if (isLoaded) {
             setLoading(false);
         }
     }, [isLoaded, isSignedIn, user]);
@@ -53,27 +50,13 @@ const SideBar = () => {
         try {
             setLoading(true);
             
-            // Solution 1: Utiliser getToken du hook useAuth
-            let response;
-            try {
-                const token = await getToken();
-                response = await axios.get('/api/subscription', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-            } catch (tokenError) {
-                // Solution 2: Si la méthode getToken échoue, utiliser la requête sans token
-                // Clerk envoie automatiquement des cookies de session avec les requêtes AJAX
-                console.log("Token auth failed, using session cookies instead");
-                response = await axios.get('/api/subscription');
-            }
-            
+            // Simplifier la requête - Clerk gère automatiquement l'authentification
+            const response = await axios.get('/api/subscription');
             setSubscriptionData(response.data);
         } catch (error) {
             console.error("Error fetching subscription data:", error);
             
-            // Utiliser les valeurs par défaut si la requête échoue
+            // Valeurs par défaut en cas d'erreur
             setSubscriptionData({
                 plan: 'Free',
                 credits: 5,
@@ -85,17 +68,23 @@ const SideBar = () => {
         }
     };
 
-    // Le reste du code reste identique...
     const creditsPercentage = Math.min(
         Math.round((subscriptionData.creditsUsed / subscriptionData.credits) * 100),
         100
     );
 
-    const isUnlimited = subscriptionData.credits > 9999;
+    const isUnlimited = subscriptionData.credits > 999;
+    
+    if (!isLoaded) {
+        return (
+            <div className='h-screen shadow-md p-5 flex items-center justify-center'>
+                <div>Loading...</div>
+            </div>
+        );
+    }
     
     return (
         <div className='h-screen shadow-md p-5'>
-            {/* Le reste du composant reste inchangé */}
             <div className='flex gap-2 items-center'>
                 <Image src={'/EDULydIA.svg'} alt='logo' width={40} height={40} />
                 <h2 className='font-bold text-2xl'>EducLydIA</h2>
@@ -162,20 +151,7 @@ const SideBar = () => {
                         className='text-primary text-sm mt-3 p-0 h-auto'
                         onClick={async () => {
                             try {
-                                // Utiliser également getToken ici
-                                let response;
-                                try {
-                                    const token = await getToken();
-                                    response = await axios.post('/api/create-portal-session', {}, {
-                                        headers: {
-                                            Authorization: `Bearer ${token}`
-                                        }
-                                    });
-                                } catch (tokenError) {
-                                    // Fallback sans token
-                                    response = await axios.post('/api/create-portal-session');
-                                }
-                                
+                                const response = await axios.post('/api/create-portal-session');
                                 window.location.href = response.data.url;
                             } catch (error) {
                                 console.error("Error opening billing portal:", error);

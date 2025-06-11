@@ -18,7 +18,7 @@ function StudyMaterialSection({courseId, course}) {
             desc: 'Flashcards of each chapter',
             icon: '/flashcard.png',
             path: '/flashcards',
-            type: 'flashcard'
+            type: 'flashcards'
         },
         {
             name: 'Quiz',
@@ -38,7 +38,7 @@ function StudyMaterialSection({courseId, course}) {
 
     useEffect(() => {
         GetStudyMaterial();
-    }, [])
+    }, [courseId])
 
     const GetStudyMaterial= async() => {
         const result = await axios.post('/api/study-type',{

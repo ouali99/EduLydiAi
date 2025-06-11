@@ -3,7 +3,7 @@ import { db } from '@/configs/db';
 import { USER_TABLE } from '@/configs/schema';
 import { useUser } from '@clerk/nextjs';
 import React, { useEffect } from 'react';
-import { eq } from 'drizzle-orm'; // Import de eq
+import { eq } from 'drizzle-orm';
 import axios from 'axios';
 
 function Provider({ children }) {
@@ -14,24 +14,29 @@ function Provider({ children }) {
   }, [user]);
 
   const CheckIsNewUser = async () => {
-    // Vérifie si l'utilisateur existe déjà, sinon l'ajoute à la DB
-    // const result = await db
-    //   .select()
-    //   .from(USER_TABLE)
-    //   .where(eq(USER_TABLE.email, user?.primaryEmailAddress?.emailAddress));
+    try {
+      // Formatage correct des données utilisateur
+      const userData = {
+        fullName: user?.fullName,
+        primaryEmailAddress: user?.primaryEmailAddress?.emailAddress,
+        clerkId: user?.id, // Ajout du clerkId
+        imageUrl: user?.imageUrl
+      };
 
-    //   if (result?.length === 0) {
-    //   // Ajouter à la base de données
-    //   const userResponse = await db
-    //     .insert(USER_TABLE)
-    //     .values({
-    //       name: user?.fullName,
-    //       email: user?.primaryEmailAddress?.emailAddress,
-    //     })
-    //     .returning({ id: USER_TABLE.id });
-    // }
-    const reponse = await axios.post('/api/create-user', { user: user });
-    console.log(reponse.data);
+      console.log('Sending user data:', userData); // Pour débugger
+
+      const response = await axios.post('/api/create-user', { 
+        user: userData 
+      });
+      
+      console.log('User creation response:', response.data);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      // Afficher l'erreur mais ne pas planter l'app
+      if (error.response) {
+        console.error('Error details:', error.response.data);
+      }
+    }
   };
 
   return <div>{children}</div>;
