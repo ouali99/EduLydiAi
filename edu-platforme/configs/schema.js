@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar, boolean, json, integer, text, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, serial, varchar, boolean, json, integer, text, timestamp, unique } from "drizzle-orm/pg-core";
 
 export const USER_TABLE = pgTable('user', {
     id: serial().primaryKey(),
@@ -13,7 +13,11 @@ export const USER_TABLE = pgTable('user', {
     subscriptionTier: varchar().default('Free'),
     subscriptionCurrentPeriodEnd: timestamp(),
     createdAt: timestamp().defaultNow()
-})
+}, (table) => ({
+    // Définir les contraintes uniques avec des noms spécifiques
+    emailUnique: unique("user_email_unique").on(table.email),
+    clerkIdUnique: unique("user_clerkId_unique").on(table.clerkId),
+}))
 
 export const STUDY_TABLE = pgTable('study', {
     id : serial().primaryKey(),
@@ -25,7 +29,10 @@ export const STUDY_TABLE = pgTable('study', {
     createdBy : varchar().notNull(),
     status : varchar().default('Generating'),
     createdAt: timestamp().defaultNow()
-})
+}, (table) => ({
+    // Contrainte unique sur courseId si nécessaire
+    courseIdUnique: unique("study_courseId_unique").on(table.courseId),
+}))
 
 export const CHAPTER_NOTES_TABLE = pgTable('chapterNotes', {
     id: serial().primaryKey(),
